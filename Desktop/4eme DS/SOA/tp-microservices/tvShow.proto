@@ -1,0 +1,47 @@
+syntax = "proto3";
+package tvShow;
+message TVShow {
+string id = 1;
+string title = 2;
+string description = 3;
+}
+message GetTVShowRequest {
+string tv_show_id = 1;
+}
+message GetTVShowResponse {
+TVShow tv_show = 1;
+}
+message SearchTVShowsRequest {
+string query = 1;
+}
+message SearchTVShowsResponse {
+repeated TVShow tv_shows = 1;
+}
+
+// New messages for CRUD operations
+message CreateTVShowRequest {
+  string title = 1;
+  string description = 2;
+}
+message CreateTVShowResponse { TVShow tv_show = 1; }
+
+message UpdateTVShowRequest {
+  string tv_show_id = 1;
+  string title = 2;
+  string description = 3;
+}
+message UpdateTVShowResponse { TVShow tv_show = 1; }
+
+message DeleteTVShowRequest { string tv_show_id = 1; }
+message DeleteTVShowResponse { bool success = 1; }
+
+// Add these to your TVShowService block
+service TVShowService {
+  rpc GetTvshow (GetTVShowRequest) returns (GetTVShowResponse);
+  rpc SearchTvshows (SearchTVShowsRequest) returns (SearchTVShowsResponse);
+  
+  // New RPC methods
+  rpc CreateTvshow(CreateTVShowRequest) returns (CreateTVShowResponse);
+  rpc UpdateTvshow(UpdateTVShowRequest) returns (UpdateTVShowResponse);
+  rpc DeleteTvshow(DeleteTVShowRequest) returns (DeleteTVShowResponse);
+}
