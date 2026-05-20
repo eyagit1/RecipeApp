@@ -1,0 +1,20 @@
+<div class="card shadow-sm border-0 border-start border-4 border-@ColorTheme h-100">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h6 class="text-muted text-uppercase small mb-1">@Title</h6>
+                <h3 class="fw-bold mb-0 text-dark">@Value</h3>
+            </div>
+            <div class="bg-@ColorTheme bg-opacity-10 p-3 rounded">
+                <i class="bi bi-@IconName text-@ColorTheme fs-3"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public string IconName { get; set; } = "activity";
+    [Parameter] public string ColorTheme { get; set; } = "primary";
+}

@@ -1,0 +1,64 @@
+@using RecipeAnalytics.Domain.Entities
+<div class="row g-4">
+    @if (Recipes == null || !Recipes.Any())
+    {
+        <div class="col-12 text-center py-5 text-muted">
+            <i class="bi bi-egg-fried fs-1 d-block mb-2"></i>
+            <p>No matching recipes found based on your multi-criteria filters.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var recipe in Recipes)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 position-relative hover-card">
+                    <span class="position-absolute top-0 end-0 m-3 badge bg-dark text-uppercase shadow-sm">
+                        @recipe.Cuisine
+                    </span>
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small">
+                                @recipe.Category
+                            </span>
+                        </div>
+                        <h5 class="card-title fw-bold text-dark mb-2">@recipe.Title</h5>
+                        <p class="card-text text-secondary small flex-grow-1">@recipe.Description</p>
+                        
+                        <div class="bg-light rounded p-2 my-3 border border-light-subtle">
+                            <div class="row text-center g-0">
+                                <div class="col-6 border-end">
+                                    <span class="text-muted d-block small-caption">Total Calories</span>
+                                    <span class="fw-bold text-danger">@recipe.TotalCalories.ToString("N0") kcal</span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="text-muted d-block small-caption">Per Serving</span>
+                                    <span class="fw-bold text-warning">@recipe.CaloriesPerServing.ToString("N0") kcal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                            <span class="text-muted small">
+                                <i class="bi bi-people-fill me-1"></i>@recipe.Servings Servings
+                            </span>
+                            <span class="text-success fw-semibold small">
+                                <i class="bi bi-currency-dollar me-1"></i>Est. Cost: @recipe.TotalCost.ToString("C2")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .small-caption { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
+    .hover-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-card:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.08)!important; }
+</style>
+
+@code {
+    [Parameter] public List<Recipe> Recipes { get; set; } = new();
+}

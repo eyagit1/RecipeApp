@@ -1,0 +1,145 @@
+@page "/meal-planner"
+@rendermode InteractiveServer
+@using RecipeAnalytics.Services.Interfaces
+@inject IRecipeService RecipeService
+
+<PageTitle>Smart Weekly Meal Planner & Shopping Consolidated Engine</PageTitle>
+
+<div class="container-fluid px-4 py-4">
+    <div class="card border-0 shadow-sm bg-gradient text-white p-4 mb-4" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-white bg-opacity-20 text-white mb-2 text-uppercase fw-bold letter-spacing">Extra Credit Target Feature</span>
+                <h2 class="fw-bold mb-1"><i class="bi bi-magic me-2"></i>Smart Weekly Meal Planner & Shopping Consolidation</h2>
+                <p class="mb-0 text-white-50">Select a daily target caloric parameter threshold. Our heuristic balance algorithm will analyze your inventory variables, generate an optimized weekly schedule, and calculate a consolidated shopping list.</p>
+            </div>
+            <div class="col-md-4 mt-3 mt-md-0">
+                <div class="bg-white bg-opacity-10 p-3 rounded border border-white border-opacity-10">
+                    <label class="form-label small fw-bold text-white text-uppercase">Configured Target Limit</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" @bind="DailyTargetCalories" min="200" max="5000" />
+                        <span class="input-group-text bg-white text-dark fw-bold">kcal</span>
+                    </div>
+                    <button class="btn btn-light w-100 mt-2 fw-bold text-primary shadow-sm" @onclick="GeneratePlan">
+                        <i class="bi bi-gear-fill me-2 rotate-icon"></i>Compile Weekly Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (GeneratedPlan != null)
+    {
+        <div class="row g-4">
+            <div class="col-xl-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-calendar3 text-primary me-2"></i>Target Balanced Schedule Map</h5>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6 rounded-pill">
+                            Weekly Load: @GeneratedPlan.TotalWeeklyCalories.ToString("N0") kcal
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3" style="width: 140px;">Day</th>
+                                        <th>Target Selected Recipe Allocation</th>
+                                        <th class="text-center">Cuisine</th>
+                                        <th class="text-end pe-3">Caloric Content</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var day in Enum.GetValues<DayOfWeek>())
+                                    {
+                                        <tr>
+                                            <td class="ps-3 fw-bold text-primary">@day</td>
+                                            <td>
+                                                @if (GeneratedPlan.DailyMenu.TryGetValue(day, out var recipe))
+                                                {
+                                                    <span class="fw-semibold text-dark d-block">@recipe.Title</span>
+                                                    <span class="text-muted small">@recipe.Category</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted italic small">No recipe allocation optimized.</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @if (recipe != null)
+                                                {
+                                                    <span class="badge bg-dark text-uppercase">@recipe.Cuisine</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pe-3 fw-bold text-danger">
+                                                @(recipe != null ? $"{recipe.TotalCalories:N0} kcal" : "0")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-cart-check-fill text-success me-2"></i>Consolidated Shopping Inventory Map</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="p-3 bg-light-subtle text-muted border-bottom small">
+                            <i class="bi bi-info-circle me-1"></i>Quantities are consolidated across all matched active recipes to prevent duplicated supply line acquisitions.
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var item in GeneratedPlan.ConsolidatedShoppingList)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">@item.IngredientName</span>
+                                        <span class="text-muted small">Required Volume: <b class="text-dark">@item.TotalQuantityNeeded.ToString("N1") @item.UnitOfMeasure</b></span>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded px-2 py-1 fs-6">
+                                            @item.EstimatedCost.ToString("C2")
+                                        </span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-light border-0 py-3 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark">Estimated Total Cost Architecture:</span>
+                        <h4 class="fw-bold text-success mb-0">@GeneratedPlan.ConsolidatedShoppingList.Sum(i => i.EstimatedCost).ToString("C2")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 bg-white rounded shadow-sm">
+            <i class="bi bi-cpu-fill fs-1 text-muted d-block mb-3 animate-pulse"></i>
+            <h5 class="text-dark fw-bold">Awaiting Execution Trigger</h5>
+            <p class="text-muted max-w-md mx-auto small">Initialize your calculation parameters above and click "Compile Weekly Schedule" to process the structural mapping.</p>
+        </div>
+    }
+</div>
+
+<style>
+    .letter-spacing { letter-spacing: 0.05rem; }
+    .rotate-icon { transition: transform 0.3s ease; }
+    button:hover .rotate-icon { transform: rotate(45deg); }
+</style>
+
+@code {
+    private double DailyTargetCalories { get; set; } = 1200;
+    private RecipeAnalytics.Services.DTOs.WeeklyMealPlanDto? GeneratedPlan { get; set; }
+
+    private async Task GeneratePlan()
+    {
+        GeneratedPlan = await RecipeService.GenerateWeeklyMealPlanAsync(DailyTargetCalories);
+    }
+}
