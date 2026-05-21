@@ -1,0 +1,155 @@
+@page "/recipes"
+@rendermode InteractiveServer
+@inject IRecipeService RecipeService
+@inject NavigationManager NavManager
+
+<PageTitle>Recipe Catalog</PageTitle>
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold text-dark m-0">Culinary Recipes</h1>
+            <p class="text-muted m-0">Browse and filter through your managed cooking registry.</p>
+        </div>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <button class="btn btn-primary shadow-sm" @onclick="NavigateToAddRecipe">
+                    <i class="bi bi-plus-lg me-2"></i>Create New Recipe
+                </button>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+
+    <div class="card shadow-sm border-0 p-3 mb-4 bg-light">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" placeholder="Search by name or description..." @bind="_searchText" @bind:event="oninput" @bind:after="ApplyFilters" />
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" @bind="_categoryFilter" @bind:after="ApplyFilters">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in Enum.GetValues<RecipeCategory>())
+                    {
+                        <option value="@cat">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" @bind="_cuisineFilter" @bind:after="ApplyFilters">
+                    <option value="">All Cuisines</option>
+                    @foreach (var cuis in Enum.GetValues<CuisineType>())
+                    {
+                        <option value="@cuis">@cuis</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" placeholder="Max Calories" @bind="_maxCalories" @bind:after="ApplyFilters" />
+            </div>
+        </div>
+    </div>
+
+    @if (_recipes == null)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else if (!_recipes.Any())
+    {
+        <div class="alert alert-info text-center p-5" role="alert">
+            <i class="bi bi-search display-4 d-block mb-3 text-muted"></i>
+            <h4>No Recipes Found</h4>
+            <p class="text-muted">Try relaxing your search terms or filter constraints.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var recipe in _recipes)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 border-top border-primary border-3">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold text-dark m-0 mb-1">@recipe.Title</h5>
+                                <span class="badge bg-secondary">@recipe.Cuisine</span>
+                            </div>
+                            <p class="card-text text-muted small flex-grow-1">@recipe.Description</p>
+                            
+                            <hr class="text-black-50 my-2" />
+                            
+                            <div class="row text-center g-1 mb-3">
+                                <div class="col-4 border-end">
+                                    <span class="d-block text-muted tiny-header">Servings</span>
+                                    <strong class="text-dark small">@recipe.Servings</strong>
+                                </div>
+                                <div class="col-4 border-end">
+                                    <span class="d-block text-muted tiny-header">Calories</span>
+                                    <strong class="text-danger small">@recipe.CaloriesPerServing.ToString("F0") kcal</strong>
+                                </div>
+                                <div class="col-4">
+                                    <span class="d-block text-muted tiny-header">Est. Cost</span>
+                                    <strong class="text-success small">@recipe.TotalCost.ToString("C2")</strong>
+                                </div>
+                            </div>
+
+                            <AuthorizeView Roles="Admin">
+                                <Authorized>
+                                    <button class="btn btn-outline-primary btn-sm mt-auto w-100" @onclick="() => DeleteRecipe(recipe.Id)">
+                                        <i class="bi bi-trash me-1"></i>Remove
+                                    </button>
+                                </Authorized>
+                            </AuthorizeView>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .tiny-header { font-size: 0.65rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+</style>
+
+@code {
+    private List<Recipe>? _recipes;
+    private string _searchText = string.Empty;
+    private string _categoryFilter = string.Empty;
+    private string _cuisineFilter = string.Empty;
+    private double? _maxCalories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRecipes();
+    }
+
+    private async Task LoadRecipes()
+    {
+        _recipes = await RecipeService.GetAllRecipesAsync();
+    }
+
+    private async Task ApplyFilters()
+    {
+        RecipeCategory? category = string.IsNullOrEmpty(_categoryFilter)
+            ? null
+            : Enum.Parse<RecipeCategory>(_categoryFilter);
+        CuisineType? cuisine = string.IsNullOrEmpty(_cuisineFilter)
+            ? null
+            : Enum.Parse<CuisineType>(_cuisineFilter);
+
+        _recipes = await RecipeService.SearchRecipesAsync(_searchText, category, cuisine, _maxCalories);
+    }
+
+    private void NavigateToAddRecipe()
+    {
+        NavManager.NavigateTo("/recipes/add");
+    }
+
+    private async Task DeleteRecipe(int id)
+    {
+        await RecipeService.DeleteRecipeAsync(id);
+        await LoadRecipes();
+    }
+}

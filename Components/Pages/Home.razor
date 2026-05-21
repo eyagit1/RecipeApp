@@ -1,7 +1,100 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@inject IRecipeService RecipeService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Recipe Analytics Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container-fluid my-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 fw-bold text-primary">Recipe Analytics Dashboard</h1>
+            <p class="text-muted">Real-time breakdown of culinary data metrics and caloric thresholds.</p>
+        </div>
+    </div>
 
-Welcome to your new app.
+    @if (_stats == null)
+    {
+        <div class="d-flex justify-content-center align-items-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading analytical structures...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-start border-primary border-4 p-3">
+                    <div class="text-muted text-uppercase small font-weight-bold">Total Managed Recipes</div>
+                    <div class="h2 font-weight-bold text-dark">@_stats.TotalRecipesCount</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-start border-success border-4 p-3">
+                    <div class="text-muted text-uppercase small font-weight-bold">Catalogued Base Ingredients</div>
+                    <div class="h2 font-weight-bold text-dark">@_stats.TotalIngredientsCount</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h5 mb-4 text-secondary">Recipes by Cultural Cuisine</h3>
+                    <RadzenChart>
+                        <RadzenPieSeries Data="@_cuisineData" 
+                                         CategoryProperty="Name" 
+                                         ValueProperty="Count" 
+                                         Title="Recipes" />
+                    </RadzenChart>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h5 mb-4 text-secondary">Recipes by Meal Category</h3>
+                    <RadzenChart>
+                        <RadzenColumnSeries Data="@_categoryCalorieData" 
+                                            CategoryProperty="Name" 
+                                            ValueProperty="Value" 
+                                            Title="Recipe Count" 
+                                            LineType="LineType.Dashed" />
+                        <RadzenValueAxis Min="0" Step="1" />
+                    </RadzenChart>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private DashboardAnalyticsDto? _stats;
+    private List<ChartPieItem> _cuisineData = new();
+    private List<ChartBarItem> _categoryCalorieData = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Hydrate data structures straight from your EF Core database pipeline
+        _stats = await RecipeService.GetDashboardAnalyticsAsync();
+
+        if (_stats != null)
+        {
+            // Map structural dictionary keypairs into explicit flat charting object models
+            _cuisineData = _stats.RecipesByCuisine.Select(c => new ChartPieItem 
+            { 
+                Name = c.CuisineName, 
+                Count = c.Count 
+            }).ToList();
+
+            _categoryCalorieData = _stats.RecipesByCategory.Select(c => new ChartBarItem 
+            { 
+                Name = c.CategoryName, 
+                Value = c.Count 
+            }).ToList();
+        }
+    }
+
+    // Local lightweight layout wrappers for standard chart component mapping data sources
+    public class ChartPieItem { public string Name { get; set; } = string.Empty; public int Count { get; set; } }
+    public class ChartBarItem { public string Name { get; set; } = string.Empty; public double Value { get; set; } }
+}

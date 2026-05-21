@@ -1,5 +1,26 @@
-﻿@page "/not-found"
-@layout MainLayout
+﻿@page "/404"
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<PageTitle>404 - Page Not Found</PageTitle>
+
+<div class="container text-center my-5 py-5">
+    <div class="card p-5 shadow-sm border-0 mx-auto bg-light" style="max-width: 600px;">
+        <div class="mb-4 text-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-compass" viewBox="0 0 16 16">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.5-7.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+                <path d="M10.116 5.884a.5.5 0 0 0-.465-.407L7.5 5.177 7.153 2.73a.5.5 0 0 0-.954 0L5.85 5.177 3.692 5.25a.5.5 0 0 0-.41.772l1.633 1.832-.347 2.446a.5.5 0 0 0-.3.154l-.001.001a.5.5 0 0 0 .73.551l2.164-1.137 2.164 1.137a.5.5 0 0 0 .73-.551l-.347-2.446 1.633-1.832a.5.5 0 0 0-.056-.58M8 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+            </svg>
+        </div>
+        
+        <h1 class="display-3 fw-bold text-dark mb-2">404</h1>
+        <h2 class="h4 text-secondary mb-3">Page Not Found</h2>
+        <p class="text-muted mx-auto mb-4" style="max-width: 450px;">
+            The URL address path you requested does not exist within this recipe tracker system tracking network.
+        </p>
+        
+        <div>
+            <a href="/" class="btn btn-primary shadow-sm px-4">
+                Return to Dashboard
+            </a>
+        </div>
+    </div>
+</div>

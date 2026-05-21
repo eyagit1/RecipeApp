@@ -7,7 +7,17 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <AuthorizeView Context="authState">
+                <Authorized>
+                    <span class="me-3">👤 @authState.User.Identity?.Name</span>
+                    <form method="post" action="/api/auth/logout" data-enhance="false" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Logout</button>
+                    </form>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login" class="btn btn-primary btn-sm">Log in</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">

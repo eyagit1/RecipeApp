@@ -1,0 +1,83 @@
+@page "/recipes/add"
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+@inject IRecipeService RecipeService
+@inject NavigationManager NavManager
+
+<PageTitle>Create Recipe</PageTitle>
+
+<div class="container my-4" style="max-width: 800px;">
+    <div class="mb-4">
+        <button class="btn btn-link p-0 text-decoration-none text-muted" @onclick="NavigateBack">
+            <i class="bi bi-arrow-left me-1"></i>Back to Catalog
+        </button>
+        <h1 class="fw-bold text-dark mt-2">New Recipe Configuration</h1>
+    </div>
+
+    <EditForm Model="@_recipe" OnValidSubmit="HandleSubmit" class="card shadow-sm border-0 p-4">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger mb-3" />
+
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label fw-semibold">Recipe Title</label>
+                <InputText class="form-control" @bind-Value="_recipe.Title" placeholder="e.g., Tunisian Couscous with Lamb" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold">Short Description</label>
+                <InputTextArea class="form-control" @bind-Value="_recipe.Description" rows="2" placeholder="Brief metadata description of this culinary dish..." />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Category</label>
+                <InputSelect class="form-select" @bind-Value="_recipe.Category">
+                    @foreach (var val in Enum.GetValues<RecipeCategory>())
+                    {
+                        <option value="@val">@val</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Cuisine Type</label>
+                <InputSelect class="form-select" @bind-Value="_recipe.Cuisine">
+                    @foreach (var val in Enum.GetValues<CuisineType>())
+                    {
+                        <option value="@val">@val</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Planned Servings</label>
+                <InputNumber class="form-control" @bind-Value="_recipe.Servings" min="1" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold">Preparation & Cooking Instructions</label>
+                <InputTextArea class="form-control" @bind-Value="_recipe.Instructions" rows="5" placeholder="Step 1. Brown meat... Step 2. Steam semolina..." />
+            </div>
+
+            <div class="col-12 pt-3 border-top d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light" @onclick="NavigateBack">Cancel</button>
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Recipe Profile</button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private Recipe _recipe = new() { Servings = 4, Category = RecipeCategory.Lunch, Cuisine = CuisineType.Tunisian };
+
+    private async Task HandleSubmit()
+    {
+        await RecipeService.CreateRecipeAsync(_recipe);
+        NavManager.NavigateTo("/recipes");
+    }
+
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/recipes");
+    }
+}

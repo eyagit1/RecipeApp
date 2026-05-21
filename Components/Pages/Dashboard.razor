@@ -1,11 +1,6 @@
-
 @page "/dashboard"
 @rendermode InteractiveServer
-@using RecipeAnalytics.Services.Interfaces
 @inject IRecipeService RecipeService
-@using RecipeAnalytics.Domain.Enums
-@using RecipeAnalytics.Domain.Entities
-@using RecipeAnalytics.Services.DTOs
 
 <PageTitle>Recipe Caloric Analytics & Cockpit</PageTitle>
 
@@ -13,129 +8,151 @@
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
         <div>
             <h1 class="fw-bold text-dark mb-1">Recipe Analytics Cockpit</h1>
-            <p class="text-muted mb-0">Production-grade multi-criteria parsing and operational metric aggregates via EF Core.</p>
-        </div>
-        <div class="text-end">
-            <span class="badge bg-success p-2 fs-6"><i class="bi bi-shield-check me-2"></i>Academic Rubric Verified</span>
-        </div>
-    </div>
-
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-6 col-xl-3">
-            <KpiCard Title="Total Recipes Registered" Value="@Analytics.TotalRecipesCount.ToString()" IconName="journal-bookmark-fill" ColorTheme="primary" />
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <KpiCard Title="Global Active Ingredients" Value="@Analytics.TotalIngredientsCount.ToString()" IconName="nut-fill" ColorTheme="info" />
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <KpiCard Title="Avg. Calories / Recipe" Value="@(FilteredRecipes.Any() ? FilteredRecipes.Average(r => r.TotalCalories).ToString("N0") + " kcal" : "0")" IconName="fire" ColorTheme="danger" />
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <KpiCard Title="Avg. Cost / Serving" Value="@(FilteredRecipes.Any() ? FilteredRecipes.Average(r => r.CaloriesPerServing > 0 ? (double)r.TotalCost / r.Servings : 0).ToString("C2") : "$0.00")" IconName="wallet2" ColorTheme="success" />
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Recipes by Category Distribution</h5>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    @if (Analytics.RecipesByCategory.Any())
-                    {
-                        <RadzenChart style="width: 100%; height: 260px;">
-                            <RadzenDonutSeries Data="@Analytics.RecipesByCategory" CategoryProperty="CategoryName" ValueProperty="Count" TotalName="Total" TItem="CategoryCountDto">
-                                <TitleTemplate>
-                                    <div class="rz-donut-content">
-                                        <div class="small text-muted">Recipes</div>
-                                        <div class="fs-4 fw-bold">@FilteredRecipes.Count</div>
-                                    </div>
-                                </TitleTemplate>
-                            </RadzenDonutSeries>
-                        </RadzenChart>
-                    }
-                    else
-                    {
-                        <div class="text-muted small">No category metrics mapped.</div>
-                    }
-                </div>
+            <p class="text-muted mb-0">Production-grade multi-criteria parsing and operational metric aggregates via EF
+                Core.</p>
             </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-success me-2"></i>Cuisine Classification Segments</h5>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    @if (Analytics.RecipesByCuisine.Any())
-                    {
-                        <RadzenChart style="width: 100%; height: 260px;">
-                            <RadzenBarSeries Data="@Analytics.RecipesByCuisine" CategoryProperty="CuisineName" ValueProperty="Count" Title="Recipe Count" LineType="LineType.Dashed" TItem="CuisineCountDto" />
-                            <RadzenValueAxis Min="0" Step="1">
-                                <RadzenGridLines Visible="true" />
-                            </RadzenValueAxis>
-                            <RadzenBarOptions Radius="4" />
-                        </RadzenChart>
-                    }
-                    else
-                    {
-                        <div class="text-muted small">No regional metrics mapped.</div>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="card shadow-sm border-0 mb-4 bg-white">
-        <div class="card-body p-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-primary"></i>Real-Time Multi-Criteria Query Engine</h5>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-muted">Free-Text Parsing (Title/Description)</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control bg-light border-start-0" placeholder="Type to filter instantly..." @bind="SearchText" @bind:event="oninput" @onafterrender="TriggerEngineSearch" />
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <KpiCard Title="Total Recipes Registered" Value="@Analytics.TotalRecipesCount.ToString()"
+                         IconName="journal-bookmark-fill" ColorTheme="primary" />
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <KpiCard Title="Global Active Ingredients" Value="@Analytics.TotalIngredientsCount.ToString()"
+                         IconName="nut-fill" ColorTheme="info" />
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <KpiCard Title="Avg. Calories / Recipe"
+                         Value="@(FilteredRecipes.Any() ? FilteredRecipes.Average(r => r.TotalCalories).ToString("N0") + " kcal" : "0")"
+                         IconName="fire" ColorTheme="danger" />
+            </div>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <KpiCard Title="Avg. Cost / Serving"
+                                 Value="@(FilteredRecipes.Any() ? FilteredRecipes.Average(r => r.CaloriesPerServing > 0 ? (double)r.TotalCost / r.Servings : 0).ToString("C2") : "$0.00")"
+                                 IconName="wallet2" ColorTheme="success" />
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Recipes by
+                            Category Distribution</h5>
+                        </div>
+                        <div class="card-body d-flex align-items-center justify-content-center">
+                            @if (Analytics.RecipesByCategory.Any())
+                            {
+                                <RadzenChart style="width: 100%; height: 260px;">
+                                    <RadzenDonutSeries Data="@Analytics.RecipesByCategory" CategoryProperty="CategoryName"
+                                                       ValueProperty="Count" TItem="CategoryCountDto">
+                                        <TitleTemplate>
+                                            <div class="rz-donut-content">
+                                                <div class="small text-muted">Recipes</div>
+                                                <div class="fs-4 fw-bold">@FilteredRecipes.Count</div>
+                                            </div>
+                                        </TitleTemplate>
+                                    </RadzenDonutSeries>
+                                </RadzenChart>
+                            }
+                            else
+                            {
+                                <div class="text-muted small">No category metrics mapped.</div>
+                            }
+                        </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-3">
-                    <label class="form-label small fw-semibold text-muted">Structural Category</label>
-                    <select class="form-select bg-light" @bind="SelectedCategory" @bind:after="TriggerEngineSearch">
-                        <option value="">-- All Categories --</option>
-                        @foreach (var cat in Enum.GetValues<RecipeCategory>())
-                        {
-                            <option value="@cat">@cat</option>
-                        }
-                    </select>
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="fw-bold text-dark mb-0"><i
+                                class="bi bi-bar-chart-line-fill text-success me-2"></i>Cuisine Classification Segments</h5>
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                @if (Analytics.RecipesByCuisine.Any())
+                                {
+                                    <RadzenChart style="width: 100%; height: 260px;">
+                                        <RadzenBarSeries Data="@Analytics.RecipesByCuisine" CategoryProperty="CuisineName"
+                                                         ValueProperty="Count" Title="Recipe Count" LineType="LineType.Dashed"
+                                                         TItem="CuisineCountDto" />
+                                        <RadzenValueAxis Min="0" Step="1">
+                                            <RadzenGridLines Visible="true" />
+                                        </RadzenValueAxis>
+                                        <RadzenBarOptions Radius="4" />
+                                    </RadzenChart>
+                                }
+                                else
+                                {
+                                    <div class="text-muted small">No regional metrics mapped.</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-6 col-md-3">
-                    <label class="form-label small fw-semibold text-muted">Cuisine Classification</label>
-                    <select class="form-select bg-light" @bind="SelectedCuisine" @bind:after="TriggerEngineSearch">
-                        <option value="">-- All Cuisines --</option>
-                        @foreach (var type in Enum.GetValues<CuisineType>())
-                        {
-                            <option value="@type">@type</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small fw-semibold text-muted">Max Calories/Serving: <span class="text-danger fw-bold">@((MaxCalories.HasValue) ? MaxCalories.Value.ToString("N0") : "Any")</span></label>
-                    <input type="range" class="form-range mt-2" min="50" max="1500" step="25" @bind="MaxCalories" @bind:after="TriggerEngineSearch" />
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h4 class="fw-bold text-dark mb-0">Discovered Recipes (@FilteredRecipes.Count)</h4>
-        @if (IsProcessing)
-        {
-            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-        }
-    </div>
-    
-    <RecipeGrid Recipes="@FilteredRecipes" />
-</div>
+                <div class="card shadow-sm border-0 mb-4 bg-white">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-primary"></i>Real-Time Multi-Criteria
+                            Query Engine</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold text-muted">Free-Text Parsing (Title/Description)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted border-end-0"><i
+                                            class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control bg-light border-start-0"
+                                                   placeholder="Type to filter instantly..." @bind="SearchText" @bind:event="oninput"
+                                                   @bind:after="TriggerEngineSearch" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-md-3">
+                                        <label class="form-label small fw-semibold text-muted">Structural Category</label>
+                                        <select class="form-select bg-light" @bind="CategoryFilter" @bind:after="TriggerEngineSearch">
+                                            <option value="">-- All Categories --</option>
+                                            @foreach (var cat in Enum.GetValues<RecipeCategory>())
+                                            {
+                                                <option value="@cat">@cat</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-6 col-md-3">
+                                        <label class="form-label small fw-semibold text-muted">Cuisine Classification</label>
+                                        <select class="form-select bg-light" @bind="CuisineFilter" @bind:after="TriggerEngineSearch">
+                                            <option value="">-- All Cuisines --</option>
+                                            @foreach (var type in Enum.GetValues<CuisineType>())
+                                            {
+                                                <option value="@type">@type</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small fw-semibold text-muted">Max Calories/Serving: <span
+                                            class="text-danger fw-bold">@((MaxCalories.HasValue) ? MaxCalories.Value.ToString("N0") :
+                                                                                                                    "Any")</span></label>
+                                            <input type="range" class="form-range mt-2" min="50" max="1500" step="25" @bind="MaxCalories"
+                                                   @bind:after="TriggerEngineSearch" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h4 class="fw-bold text-dark mb-0">Discovered Recipes (@FilteredRecipes.Count)</h4>
+                                @if (IsProcessing)
+                                {
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                }
+                            </div>
+
+                            <RecipeGrid Recipes="@FilteredRecipes" />
+
+                        </div>
 
 @code {
     private DashboardAnalyticsDto Analytics { get; set; } = new();
@@ -143,8 +160,8 @@
 
     // Query Variable Bindings
     private string SearchText { get; set; } = string.Empty;
-    private RecipeCategory? SelectedCategory { get; set; }
-    private CuisineType? SelectedCuisine { get; set; }
+    private string CategoryFilter { get; set; } = string.Empty;
+    private string CuisineFilter { get; set; } = string.Empty;
     private double? MaxCalories { get; set; }
     private bool IsProcessing { get; set; } = false;
 
@@ -162,10 +179,17 @@
     private async Task TriggerEngineSearch()
     {
         IsProcessing = true;
+        RecipeCategory? category = string.IsNullOrEmpty(CategoryFilter)
+            ? null
+            : Enum.Parse<RecipeCategory>(CategoryFilter);
+        CuisineType? cuisine = string.IsNullOrEmpty(CuisineFilter)
+            ? null
+            : Enum.Parse<CuisineType>(CuisineFilter);
+
         FilteredRecipes = await RecipeService.SearchRecipesAsync(
-            SearchText, 
-            SelectedCategory, 
-            SelectedCuisine, 
+            SearchText,
+            category,
+            cuisine,
             MaxCalories
         );
         IsProcessing = false;

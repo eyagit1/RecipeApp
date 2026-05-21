@@ -1,18 +1,20 @@
-@using RecipeAnalytics.Domain.Entities
-<div class="row g-4">
-    @if (Recipes == null || !Recipes.Any())
-    {
+@if (Recipes == null || !Recipes.Any())
+{
+    <div class="row g-4">
         <div class="col-12 text-center py-5 text-muted">
             <i class="bi bi-egg-fried fs-1 d-block mb-2"></i>
             <p>No matching recipes found based on your multi-criteria filters.</p>
         </div>
-    }
-    else
-    {
+    </div>
+}
+else
+{
+    <div class="row g-4">
         @foreach (var recipe in Recipes)
         {
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-0 position-relative hover-card">
+                <div class="card h-100 shadow-sm border-0 position-relative hover-card" role="button"
+                     @onclick="() => SelectRecipe(recipe)" style="cursor: pointer;">
                     <span class="position-absolute top-0 end-0 m-3 badge bg-dark text-uppercase shadow-sm">
                         @recipe.Cuisine
                     </span>
@@ -24,7 +26,7 @@
                         </div>
                         <h5 class="card-title fw-bold text-dark mb-2">@recipe.Title</h5>
                         <p class="card-text text-secondary small flex-grow-1">@recipe.Description</p>
-                        
+
                         <div class="bg-light rounded p-2 my-3 border border-light-subtle">
                             <div class="row text-center g-0">
                                 <div class="col-6 border-end">
@@ -50,15 +52,97 @@
                 </div>
             </div>
         }
-    }
-</div>
+    </div>
+}
 
-<style>
-    .small-caption { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
-    .hover-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .hover-card:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.08)!important; }
-</style>
+<!-- Recipe Detail Modal -->
+@if (SelectedRecipe != null)
+{
+    <div class="modal d-block" style="background-color: rgba(0,0,0,0.5);" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">@SelectedRecipe.Title</h5>
+                    <button type="button" class="btn-close" @onclick="() => SelectedRecipe = null"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="text-muted small mb-1"><strong>Category:</strong> @SelectedRecipe.Category</p>
+                            <p class="text-muted small mb-1"><strong>Cuisine:</strong> @SelectedRecipe.Cuisine</p>
+                            <p class="text-muted small mb-1"><strong>Servings:</strong> @SelectedRecipe.Servings</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted small mb-1"><strong>Total Calories:</strong> <span
+                                class="text-danger">@SelectedRecipe.TotalCalories.ToString("N0") kcal</span></p>
+                                <p class="text-muted small mb-1"><strong>Calories per Serving:</strong> <span
+                                    class="text-warning">@SelectedRecipe.CaloriesPerServing.ToString("N0") kcal</span></p>
+                                    <p class="text-muted small mb-1"><strong>Estimated Cost:</strong> <span
+                                        class="text-success">@SelectedRecipe.TotalCost.ToString("C2")</span></p>
+                                    </div>
+                                </div>
+
+                                <hr />
+
+                                <div class="mb-3">
+                                    <h6 class="fw-bold mb-2">Description</h6>
+                                    <p class="text-muted">@SelectedRecipe.Description</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6 class="fw-bold mb-2">Instructions</h6>
+                                    <p class="text-muted" style="white-space: pre-wrap;">@SelectedRecipe.Instructions</p>
+                                </div>
+
+                                @if (SelectedRecipe.RecipeIngredients != null && SelectedRecipe.RecipeIngredients.Any())
+                                {
+                                    <div>
+                                        <h6 class="fw-bold mb-2">Ingredients</h6>
+                                        <ul class="list-group list-group-flush">
+                                            @foreach (var item in SelectedRecipe.RecipeIngredients)
+                                            {
+                                                <li class="list-group-item px-0">
+                                                    <span class="fw-semibold">@item.Ingredient?.Name</span>
+                                                    <span class="text-muted small ms-2">@item.Quantity @item.Ingredient?.UnitOfMeasure</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-secondary" @onclick="() => SelectedRecipe = null">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <style>
+                .small-caption {
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                }
+
+                .hover-card {
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+
+                .hover-card:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .08) !important;
+                }
+            </style>
 
 @code {
-    [Parameter] public List<Recipe> Recipes { get; set; } = new();
+    [Parameter]
+    public List<Recipe> Recipes { get; set; } = new();
+
+    private Recipe? SelectedRecipe { get; set; }
+
+    private void SelectRecipe(Recipe recipe)
+    {
+        SelectedRecipe = recipe;
+    }
 }

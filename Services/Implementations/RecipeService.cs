@@ -94,11 +94,7 @@ namespace RecipeAnalytics.Services.Implementations
             return analytics;
         }
 
-        /// <summary>
-        /// Algorithmic Extra Credit Implementation:
-        /// Selects suitable recipes balanced dynamically towards a configured target parameter limit.
-        /// Consolidates raw ingredients across recipes using standard structural maps.
-        /// </summary>
+      
         public async Task<WeeklyMealPlanDto> GenerateWeeklyMealPlanAsync(double dailyCaloricTarget)
         {
             var plan = new WeeklyMealPlanDto();

@@ -1,6 +1,5 @@
 @page "/meal-planner"
 @rendermode InteractiveServer
-@using RecipeAnalytics.Services.Interfaces
 @inject IRecipeService RecipeService
 
 <PageTitle>Smart Weekly Meal Planner & Shopping Consolidated Engine</PageTitle>
@@ -53,27 +52,28 @@
                                 <tbody>
                                     @foreach (var day in Enum.GetValues<DayOfWeek>())
                                     {
+                                        var dayRecipe = GeneratedPlan.DailyMenu.GetValueOrDefault(day);
                                         <tr>
                                             <td class="ps-3 fw-bold text-primary">@day</td>
                                             <td>
-                                                @if (GeneratedPlan.DailyMenu.TryGetValue(day, out var recipe))
+                                                @if (dayRecipe is not null)
                                                 {
-                                                    <span class="fw-semibold text-dark d-block">@recipe.Title</span>
-                                                    <span class="text-muted small">@recipe.Category</span>
+                                                    <span class="fw-semibold text-dark d-block">@dayRecipe.Title</span>
+                                                    <span class="text-muted small">@dayRecipe.Category</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="text-muted italic small">No recipe allocation optimized.</span>
+                                                    <span class="text-muted fst-italic small">No recipe allocation optimized.</span>
                                                 }
                                             </td>
                                             <td class="text-center">
-                                                @if (recipe != null)
+                                                @if (dayRecipe is not null)
                                                 {
-                                                    <span class="badge bg-dark text-uppercase">@recipe.Cuisine</span>
+                                                    <span class="badge bg-dark text-uppercase">@dayRecipe.Cuisine</span>
                                                 }
                                             </td>
                                             <td class="text-end pe-3 fw-bold text-danger">
-                                                @(recipe != null ? $"{recipe.TotalCalories:N0} kcal" : "0")
+                                                @(dayRecipe is not null ? $"{dayRecipe.TotalCalories:N0} kcal" : "0")
                                             </td>
                                         </tr>
                                     }
@@ -136,7 +136,7 @@
 
 @code {
     private double DailyTargetCalories { get; set; } = 1200;
-    private RecipeAnalytics.Services.DTOs.WeeklyMealPlanDto? GeneratedPlan { get; set; }
+    private WeeklyMealPlanDto? GeneratedPlan { get; set; }
 
     private async Task GeneratePlan()
     {
